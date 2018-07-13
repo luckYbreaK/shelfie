@@ -42,24 +42,30 @@ class Form extends Component {
         this.setState({
             name: "",
             price: 0,
-            imgurl: ""
+            imgurl: "",
+            selectedProduct: null
         });
     }
 
     handleAddClick() {
-        const { name, price, imgurl } = this.state
-        axios.post("/api/product", { name: name, price: price, img: imgurl }).then(() => {
-            this.props.getRequestFn();
-            this.clearInputs();
-        });
+        if (this.state.selectedProduct === null) {
+            const { name, price, imgurl } = this.state
+            axios.post("/api/product", { name: name, price: price, img: imgurl }).then(() => {
+                this.props.getRequestFn();
+                this.clearInputs();
+            });
+        } else {
+            axios.put(`/api/product/${this.state.selectedProduct.id}?name=${this.state.selectedProduct.name}&price=${this.state.selectedProduct.price}&img=${this.state.selectedProduct.img}`).then(() => {
+                this.props.getRequestFn();
+                this.clearInputs();
+                
+            });
+        }
+
     }
 
     handleSaveClick() {
-        const { id, name, price, img } = this.state.selectedProduct
-        axios.put(`/api/product/${id}?name=${name}?price=${price}?img=${img}`).then(() => {
-            this.props.getRequestFn();
-            this.clearInputs();
-        });
+        
     }
 
     componentDidUpdate(prevProp) {
@@ -74,9 +80,11 @@ class Form extends Component {
     }
 
     render() {
-        console.log(this.state.selectedProduct);
+
 
         const toggleButton = this.state.selectedProduct === null ? "Add to Inventory" : "Save Changes";
+        console.log(this.state.selectedProduct);
+
         return (
             <div>Form
                 <br />
@@ -105,8 +113,9 @@ class Form extends Component {
                 <button
                     onClick=
                     {
-                        toggleButton === "Add to Inventory" ?
-                        this.handleAddClick : this.handleSaveClick
+                        // this.state.selectedProduct === null ?
+                        this.handleAddClick
+                        //  : this.handleSaveClick
                     }
                 >{toggleButton}</button>
             </div>

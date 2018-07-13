@@ -35,8 +35,10 @@ module.exports = {
 
     updateProduct: (req, res) => {
         const dbInstance = req.app.get('db');
+        let {name, price, img} = req.query;
+        
 
-        dbInstance.update_product([req.params.id, req.query.name, req.query.price, req.query.img])
+        dbInstance.update_product([req.params.id, name, price, img])
             .then(() => res.sendStatus(200))
                 .catch(err => {
                     res.status(500).send("Sorry, there's an issue with the server");
