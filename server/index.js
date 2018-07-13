@@ -10,6 +10,10 @@ const app = express();
 app.use(bodyParser.json());
 
 //Endpoints
+app.get("/api/inventory", controller.readProducts);
+app.post("/api/product", controller.createProduct);
+app.delete("/api/product/:id", controller.deleteProduct);
+app.put("/api/product/:id", controller.updateProduct);
 
 massive(process.env.CONNECTION_STRING).then(dbInstance => {
     app.set('db', dbInstance);
