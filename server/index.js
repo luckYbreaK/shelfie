@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 
 //Endpoints
 app.get("/api/inventory", controller.readProducts);
+app.get("/api/product/:id", controller.readProduct);
 app.post("/api/product", controller.createProduct);
 app.delete("/api/product/:id", controller.deleteProduct);
 app.put("/api/product/:id", controller.updateProduct);

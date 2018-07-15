@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
+
+import Header from '../Header/Header';
 
 class Form extends Component {
     constructor() {
@@ -8,16 +11,21 @@ class Form extends Component {
         this.state = {
             name: "",
             price: 0,
-            imgurl: "",
-            selectedProduct: null
+            imgurl: ""
         }
 
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handlePriceChange = this.handlePriceChange.bind(this);
         this.handleImageURLChange = this.handleImageURLChange.bind(this);
         this.clearInputs = this.clearInputs.bind(this);
-        this.handleAddClick = this.handleAddClick.bind(this);
-        this.handleSaveClick = this.handleSaveClick.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+        this.getProduct = this.getProduct.bind(this);
+    }
+
+    componentDidMount() {
+        if(this.props.location.pathname !== "/add") {
+            this.getProduct(); 
+        }
     }
 
     handleNameChange(val) {
@@ -38,56 +46,58 @@ class Form extends Component {
         });
     }
 
+    handleClick() {
+        if (this.props.location.pathname === "/add") {
+            const { name, price, imgurl } = this.state
+            axios.post("/api/product", { name: name, price: price, img: imgurl }).then(() => {
+                this.getProduct();
+                this.clearInputs();
+            });
+        } else {
+            const { name, price, imgurl } = this.state
+            axios.put(`/api/product/${this.props.match.params.id}?name=${name}&price=${price}&img=${imgurl}`).then(() => {
+                this.getProduct();
+                this.clearInputs();
+            });
+        }
+    }
+
     clearInputs() {
         this.setState({
             name: "",
             price: 0,
-            imgurl: "",
-            selectedProduct: null
+            imgurl: ""
         });
     }
 
-    handleAddClick() {
-        if (this.state.selectedProduct === null) {
-            const { name, price, imgurl } = this.state
-            axios.post("/api/product", { name: name, price: price, img: imgurl }).then(() => {
-                this.props.getRequestFn();
-                this.clearInputs();
+    getProduct() {
+        axios.get(`/api/product/${this.props.match.params.id}`).then(res => { 
+            this.setState({
+                name: res.data[0].name ? res.data[0].name : "",
+                price: res.data[0].price ? res.data[0].price : 0,
+                imgurl: res.data[0].img ? res.data[0].img : ""
             });
-        } else {
-            axios.put(`/api/product/${this.state.selectedProduct.id}?name=${this.state.selectedProduct.name}&price=${this.state.selectedProduct.price}&img=${this.state.selectedProduct.img}`).then(() => {
-                this.props.getRequestFn();
-                this.clearInputs();
-                
-            });
-        }
-
+        });
     }
 
-    handleSaveClick() {
-        
-    }
 
     componentDidUpdate(prevProp) {
-        if (this.props.selectedProduct !== prevProp.selectedProduct) {
+        if (this.props.location.pathname !== prevProp.location.pathname) {
             this.setState({
-                selectedProduct: this.props.selectedProduct,
-                name: this.props.selectedProduct.name,
-                price: this.props.selectedProduct.price,
-                imgurl: this.props.selectedProduct.img
+                name: "",
+                price: 0,
+                imgurl: ""
             });
         }
     }
 
     render() {
-
-
-        const toggleButton = this.state.selectedProduct === null ? "Add to Inventory" : "Save Changes";
-        console.log(this.state.selectedProduct);
-
+        // console.log(this.props);
+        const toggleButton = this.props.location.pathname === "/add" ? "Add to Inventory" : "Save Changes";
         return (
-            <div>Form
-                <br />
+            <div>
+                <Header />
+                <h1>Form</h1>
                 Image URL:
                 <input
                     type="text"
@@ -109,15 +119,8 @@ class Form extends Component {
                     onChange={(e) => this.handlePriceChange(e.target.value)}
                 />
                 <br />
-                <button onClick={this.clearInputs}>Cancel</button>
-                <button
-                    onClick=
-                    {
-                        // this.state.selectedProduct === null ?
-                        this.handleAddClick
-                        //  : this.handleSaveClick
-                    }
-                >{toggleButton}</button>
+                <Link to="/add"><button onClick={this.clearInputs}>Cancel</button></Link>
+                <Link to="/"><button onClick={this.handleClick}>{toggleButton}</button></Link>
             </div>
         );
     }
